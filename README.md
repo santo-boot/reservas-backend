@@ -1,59 +1,155 @@
 # reservas-backend
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+# Sistema de Reservas – Backend (Quarkus)
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+**Realizado por:** Santiago Chicaiza
 
-## Running the application in dev mode
+Backend REST desarrollado con **Quarkus** para la gestión de reservas entre clientes y profesionales, cumpliendo reglas de negocio como disponibilidad de horarios y validación de solapamientos.
 
-You can run your application in dev mode that enables live coding using:
+---
 
-```shell script
-./mvnw quarkus:dev
+## Consideraciones cumplidas
+
+- Uso de base de datos relacional (PostgreSQL)
+- Validación de requests con `@Valid`
+- Control de excepciones
+- Excepciones de negocio personalizadas
+- Documentación con OpenAPI / Swagger
+- Arquitectura Domain / Application / Infrastructure (DDD ligero)
+- Uso de Hibernate ORM + Panache
+- No se utiliza JWT
+- No se incluye Kafka ni despliegue en la nube
+
+---
+
+## Reglas de negocio
+
+- Un profesional no puede tener reservas solapadas
+- Solo se consideran reservas en estado **ACTIVA**
+- Validaciones de fecha y hora
+- Manejo de errores mediante excepciones de negocio
+
+---
+
+## Tecnologías utilizadas
+
+- Java 21+
+- Quarkus 3.x
+- Hibernate ORM + Panache
+- PostgreSQL
+- RESTEasy Reactive (JAX-RS)
+- Swagger / OpenAPI
+- Maven
+- Visual Studio Code
+
+---
+
+## Arquitectura del proyecto
+
+```
+domain
+ ├─ model        -> Entidades del dominio
+ └─ exception    -> Excepciones de negocio
+
+application
+ └─ service      -> Lógica de negocio
+
+infrastructure
+ ├─ rest         -> Endpoints REST
+ └─ repository   -> Acceso a datos
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+---
 
-## Packaging and running the application
+## Configuración de base de datos
 
-The application can be packaged using:
+El proyecto utiliza **PostgreSQL**.
 
-```shell script
-./mvnw package
+### application.properties
+
+```properties
+quarkus.datasource.db-kind=postgresql
+quarkus.datasource.username=reservas_user
+quarkus.datasource.password=reservas123
+quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/reservas
+
+quarkus.hibernate-orm.database.generation=drop-and-create
+quarkus.hibernate-orm.log.sql=true
+
+quarkus.swagger-ui.always-include=true
+quarkus.swagger-ui.path=/swagger-ui
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+---
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+## Inicialización de datos
 
-If you want to build an _über-jar_, execute the following command:
+- Las tablas se crean automáticamente al iniciar la aplicación
+- Los datos de prueba se cargan desde:
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+```
+src/main/resources/import.sql
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+Incluye:
+- Profesionales
+- Clientes
+- Horarios disponibles
+- Reservas de ejemplo
 
-## Creating a native executable
+---
 
-You can create a native executable using:
+##  Ejecución del proyecto
 
-```shell script
-./mvnw package -Dnative
+### 1. Crear base de datos
+
+```sql
+CREATE DATABASE reservas;
+CREATE USER reservas_user WITH PASSWORD 'reservas123';
+GRANT ALL PRIVILEGES ON DATABASE reservas TO reservas_user;
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+### 2. Ejecutar la aplicación
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+```bash
+mvn quarkus:dev
 ```
 
-You can then execute your native executable with: `./target/reservas-backend-1-runner`
+---
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+## Documentación de la API
 
-## Related Guides
+Swagger UI:
 
-- RESTEasy Classic ([guide](https://quarkus.io/guides/resteasy)): REST endpoint framework implementing Jakarta REST and more
-- RESTEasy Classic's REST Client Jackson ([guide](https://quarkus.io/guides/resteasy-client)): Jackson serialization support for the REST Client
+```
+http://localhost:8080/swagger-ui
+```
+
+---
+
+## Endpoints principales
+
+### Profesionales
+- `POST   /profesionales`
+- `GET    /profesionales`
+- `PUT    /profesionales/{id}`
+
+### Clientes
+- `POST   /clientes`
+- `GET    /clientes`
+
+### Horarios disponibles
+- `POST   /horarios`
+- `GET    /horarios`
+- `PUT    /horarios/{id}`
+
+### Reservas
+- `POST   /reservas`
+- `GET    /reservas`
+- `PUT    /reservas/{id}/cancelar`
+
+---
+
+## Estado del proyecto
+
+Proyecto **funcional**, con reglas de negocio implementadas, validaciones activas y datos de prueba cargados correctamente.
